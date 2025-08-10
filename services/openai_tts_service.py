@@ -33,18 +33,18 @@ class OpenAITTSService:
     def _normalize_voice_name(self, voice_name: str) -> str:
         """Map friendly or alias names to supported OpenAI voice presets."""
         if not voice_name:
-            return "ballad"
+            return "echo"
         name = voice_name.strip().lower()
         alias_to_voice = {
             # Common aliases for a youthful/young-boy style
-            "boy": "ballad",
-            "young": "ballad",
-            "kid": "ballad",
-            "child": "ballad",
-            "young_boy": "ballad",
-            "young-boy": "ballad",
-            # Backward compatibility: requests for 'fable' now use 'ballad'
-            "fable": "ballad",
+            "boy": "echo",
+            "young": "echo",
+            "kid": "echo",
+            "child": "echo",
+            "young_boy": "echo",
+            "young-boy": "echo",
+            # Backward compatibility: requests for 'fable' now use 'echo'
+            "fable": "echo",
         }
         if name in alias_to_voice:
             return alias_to_voice[name]
@@ -53,7 +53,7 @@ class OpenAITTSService:
     async def text_to_speech(
         self,
         text: str,
-        voice_name: str = "ballad",
+        voice_name: str = "echo",
         model_id: Optional[str] = None,
         output_format: str = "mp3",
         voice_settings: Optional[Dict[str, Any]] = None,
@@ -74,11 +74,11 @@ class OpenAITTSService:
 
             # Ensure voice is a supported preset (normalize common aliases first)
             voice_name = self._normalize_voice_name(voice_name)
-            if voice_name not in {"alloy", "echo", "ballad", "onyx", "nova", "shimmer"}:
+            if voice_name not in {"alloy", "echo", "echo", "onyx", "nova", "shimmer"}:
                 logger.warning(
-                    f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'ballad'."
+                    f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'echo'."
                 )
-                voice_name = "ballad"
+                voice_name = "echo"
 
             # Validate output format
             allowed_formats = {"mp3", "wav", "ogg", "flac", "aac", "opus", "pcm"}
