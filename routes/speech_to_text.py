@@ -11,7 +11,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from schemas import SpeechToTextRequest, SpeechToTextResponse, ErrorResponse
 from services.groq_service import GroqService
-from services.elevenlabs_service import ElevenLabsService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -29,7 +28,6 @@ async def speech_to_text(
     """
     try:
         groq_service = GroqService()
-        eleven_service = None  # Instantiate lazily only if needed
         
         # Check if this is a multipart form data request
         if file:
@@ -93,31 +91,13 @@ async def speech_to_text(
             content_type = mime_map.get(fmt.lower(), "audio/webm")
             filename = f"audio.{fmt.lower()}"
 
-        # Decide provider by model_id. ElevenLabs uses models like 'scribe_v1'.
-        eleven_model_hints = {"scribe_v1"}
-        use_eleven = False
-        if isinstance(model_id, str):
-            normalized_model = model_id.strip().lower()
-            use_eleven = (
-                normalized_model in eleven_model_hints or
-                normalized_model.startswith("eleven_")
-            )
-
-        if use_eleven:
-            if eleven_service is None:
-                eleven_service = ElevenLabsService()
-            result = await eleven_service.speech_to_text(
-                audio_data=audio_data,
-                model_id=model_id or "scribe_v1",
-            )
-        else:
-            # Process with Groq Whisper
-            result = await groq_service.transcribe_audio(
-                audio_data=audio_data,
-                model_id=model_id or "whisper-large-v3",
-                file_mime_type=content_type,
-                filename=filename,
-            )
+        # Process with Groq Whisper
+        result = await groq_service.transcribe_audio(
+            audio_data=audio_data,
+            model_id=model_id or "whisper-large-v3",
+            file_mime_type=content_type,
+            filename=filename,
+        )
         
         return SpeechToTextResponse(
             text=result['text'],
