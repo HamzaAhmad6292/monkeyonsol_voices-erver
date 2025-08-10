@@ -33,17 +33,18 @@ class OpenAITTSService:
     def _normalize_voice_name(self, voice_name: str) -> str:
         """Map friendly or alias names to supported OpenAI voice presets."""
         if not voice_name:
-            return "fable"
+            return "ballad"
         name = voice_name.strip().lower()
         alias_to_voice = {
             # Common aliases for a youthful/young-boy style
-            "boy": "fable",
-            "young": "fable",
-            "kid": "fable",
-            "child": "fable",
-            "young_boy": "fable",
-            "young-boy": "fable",
-            "ballad": "fable",  # map requested 'ballad' to closest preset
+            "boy": "ballad",
+            "young": "ballad",
+            "kid": "ballad",
+            "child": "ballad",
+            "young_boy": "ballad",
+            "young-boy": "ballad",
+            # Backward compatibility: requests for 'fable' now use 'ballad'
+            "fable": "ballad",
         }
         if name in alias_to_voice:
             return alias_to_voice[name]
@@ -52,7 +53,7 @@ class OpenAITTSService:
     async def text_to_speech(
         self,
         text: str,
-        voice_name: str = "fable",
+        voice_name: str = "ballad",
         model_id: Optional[str] = None,
         output_format: str = "mp3",
         voice_settings: Optional[Dict[str, Any]] = None,
@@ -73,11 +74,11 @@ class OpenAITTSService:
 
             # Ensure voice is a supported preset (normalize common aliases first)
             voice_name = self._normalize_voice_name(voice_name)
-            if voice_name not in {"alloy", "echo", "fable", "onyx", "nova", "shimmer"}:
+            if voice_name not in {"alloy", "echo", "ballad", "onyx", "nova", "shimmer"}:
                 logger.warning(
-                    f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'fable'."
+                    f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'ballad'."
                 )
-                voice_name = "fable"
+                voice_name = "ballad"
 
             # Validate output format
             allowed_formats = {"mp3", "wav", "ogg", "flac", "aac", "opus", "pcm"}
