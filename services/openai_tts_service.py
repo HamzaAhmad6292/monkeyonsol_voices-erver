@@ -42,6 +42,7 @@ class OpenAITTSService:
             "kid": "echo",
             "child": "echo",
             "young_boy": "echo",
+            
             "young-boy": "echo",
             # Backward compatibility: requests for 'fable' now use 'echo'
             "fable": "echo",
