@@ -92,24 +92,30 @@ voice_server/
 ### Speech-to-Text
 - `POST /api/speech-to-text` - Convert audio to text
 
-**Multipart Form Data:**
+**Multipart Form Data (auto-routes provider):**
 ```bash
 curl -X POST "http://localhost:8000/api/speech-to-text" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@audio.webm" \
-  -F "model_id=scribe_v1"
+  -F "model_id=whisper-large-v3"
 ```
 
-**JSON with Base64:**
+You can also use ElevenLabs by specifying its model id, e.g. `scribe_v1`.
+
+**JSON with Base64 (auto-routes provider):**
 ```bash
 curl -X POST "http://localhost:8000/api/speech-to-text" \
   -H "Content-Type: application/json" \
   -d '{
     "audio": "base64_encoded_audio_data",
     "format": "webm",
-    "model_id": "scribe_v1"
+    "model_id": "whisper-large-v3"
   }'
 ```
+
+The server will automatically route speech-to-text requests based on `model_id`:
+- `whisper-*` models → Groq Whisper endpoint
+- `scribe_v1` (or models starting with `eleven_`) → ElevenLabs STT
 
 ### Text-to-Speech
 - `POST /api/text-to-speech` - Convert text to speech
