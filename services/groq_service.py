@@ -3,6 +3,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException
 from groq import Groq
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -101,3 +102,70 @@ class GroqService:
                 status_code=502,
                 detail=f"Failed to fetch completion from Groq API: {str(e)}"
             ) 
+
+    async def transcribe_audio(
+        self,
+        audio_data: bytes,
+        model_id: str = "whisper-large-v3",
+        file_mime_type: str = "audio/webm",
+        filename: str = "audio.webm",
+    ) -> Dict[str, Any]:
+        """
+        Transcribe audio using Groq Whisper via the OpenAI-compatible endpoint.
+
+        Args:
+            audio_data: Raw audio bytes
+            model_id: Whisper model id (e.g., 'whisper-large-v3', 'whisper-large-v3-turbo')
+            file_mime_type: MIME type of the provided audio bytes
+            filename: Filename to send in multipart form
+
+        Returns:
+            Dict containing at least 'text'.
+        """
+        try:
+            if not audio_data or len(audio_data) == 0:
+                raise HTTPException(status_code=400, detail="Invalid audio data - empty buffer")
+
+            logger.info(f"Groq STT: transcribing {len(audio_data)} bytes with model {model_id}")
+
+            data = aiohttp.FormData()
+            data.add_field("file", audio_data, filename=filename, content_type=file_mime_type)
+            data.add_field("model", model_id)
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.groq.com/openai/v1/audio/transcriptions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                    },
+                    data=data,
+                ) as response:
+                    if not response.ok:
+                        error_text = await response.text()
+                        logger.error(f"Groq Whisper API Error: {error_text}")
+                        logger.error(f"Response status: {response.status}")
+                        raise HTTPException(
+                            status_code=response.status,
+                            detail=f"Failed to transcribe audio: {error_text}",
+                        )
+
+                    result = await response.json()
+                    text = result.get("text")
+                    if not text:
+                        raise HTTPException(
+                            status_code=502,
+                            detail="No transcription received from Groq Whisper",
+                        )
+
+                    logger.info(f"Groq STT: successfully transcribed text: {text[:100]}...")
+                    return {
+                        "text": text,
+                        # Whisper API does not return confidence; default to 0.0 for compatibility
+                        "confidence": 0.0,
+                    }
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Groq STT error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Speech-to-text processing failed: {str(e)}")

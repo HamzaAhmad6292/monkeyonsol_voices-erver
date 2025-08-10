@@ -6,7 +6,7 @@ from enum import Enum
 class SpeechToTextRequest(BaseModel):
     audio: Optional[str] = Field(None, description="Base64 encoded audio data")
     format: str = Field(default="webm", description="Audio format (webm, mp4, wav)")
-    model_id: str = Field(default="scribe_v1", description="ElevenLabs model ID")
+    model_id: str = Field(default="whisper-large-v3", description="Groq Whisper model ID")
 
 class SpeechToTextResponse(BaseModel):
     text: str = Field(..., description="Transcribed text")

@@ -91,7 +91,7 @@ async def test_speech_to_text_endpoint():
     payload = {
         "audio": dummy_audio,
         "format": "webm",
-        "model_id": "scribe_v1"
+        "model_id": "whisper-large-v3"
     }
     
     async with aiohttp.ClientSession() as session:
