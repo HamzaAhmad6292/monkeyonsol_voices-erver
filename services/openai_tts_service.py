@@ -17,13 +17,13 @@ class OpenAITTSService:
             raise ValueError("OPENAI_API_KEY environment variable is required")
 
         # Allowed OpenAI TTS models (expand as OpenAI adds more)
-        self.allowed_models = {"tts-1", "tts-1-hd", "gpt-4o-mini-tts"}
+        self.allowed_models = { "gpt-4o-mini-tts"}
 
         # Default model for TTS; use a safe value if an invalid one is configured
-        configured_default = os.getenv("OPENAI_TTS_MODEL", "tts-1")
+        configured_default = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
         if configured_default not in self.allowed_models:
             logger.warning(
-                f"Invalid OPENAI_TTS_MODEL '{configured_default}' configured. Falling back to 'tts-1'."
+                f"Invalid OPENAI_TTS_MODEL '{configured_default}' configured. Falling back to 'gpt-4o-mini-tts'."
             )
             self.default_model = "gpt-4o-mini-tts"
         else:
