@@ -17,7 +17,7 @@ class OpenAITTSService:
             raise ValueError("OPENAI_API_KEY environment variable is required")
 
         # Allowed OpenAI TTS models (expand as OpenAI adds more)
-        self.allowed_models = { "gpt-4o-mini-tts"}
+        self.allowed_models = {"gpt-4o-mini-tts"}
 
         # Default model for TTS; use a safe value if an invalid one is configured
         configured_default = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
@@ -29,32 +29,32 @@ class OpenAITTSService:
         else:
             self.default_model = configured_default
         self.base_url = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
+        # Optional style instructions that guide the TTS voice delivery
+        # Default to the user's requested behavior
+        self.style_instructions = os.getenv(
+            "OPENAI_TTS_INSTRUCTIONS", "Speak in a artistic cartoon dog way"
+        ).strip()
 
     def _normalize_voice_name(self, voice_name: str) -> str:
-        """Map friendly or alias names to supported OpenAI voice presets."""
+        """Normalize to OpenAI-supported lowercase voice names; map simple aliases."""
         if not voice_name:
-            return "Ballad"
+            return "ballad"
         name = voice_name.strip().lower()
         alias_to_voice = {
             # Common aliases for a youthful/young-boy style
-            "boy": "Ballad",
-            "young": "Ballad",
-            "kid": "Ballad",
-            "child": "Ballad",
-            "young_boy": "Ballad",
-            
-            "young-boy": "Ballad",
-            # Backward compatibility: requests for 'fable' now use 'echo'
-            "fable": "Ballad",
+            "boy": "ballad",
+            "young": "ballad",
+            "kid": "ballad",
+            "child": "ballad",
+            "young_boy": "ballad",
+            "young-boy": "ballad",
         }
-        if name in alias_to_voice:
-            return alias_to_voice[name]
-        return name
+        return alias_to_voice.get(name, name)
 
     async def text_to_speech(
         self,
         text: str,
-        voice_name: str = "Ballad",
+        voice_name: str = "ballad",
         model_id: Optional[str] = None,
         output_format: str = "mp3",
         voice_settings: Optional[Dict[str, Any]] = None,
@@ -75,11 +75,24 @@ class OpenAITTSService:
 
             # Ensure voice is a supported preset (normalize common aliases first)
             voice_name = self._normalize_voice_name(voice_name)
-            if voice_name not in {"alloy", "Ballad", "Ballad", "onyx", "nova", "shimmer"}:
+            allowed_voices = {
+                "alloy",
+                "echo",
+                "fable",
+                "onyx",
+                "nova",
+                "shimmer",
+                "coral",
+                "verse",
+                "ballad",
+                "ash",
+                "sage",
+            }
+            if voice_name not in allowed_voices:
                 logger.warning(
-                    f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'echo'."
+                    f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'ballad'."
                 )
-                voice_name = "Ballad"
+                voice_name = "ballad"
 
             # Validate output format
             allowed_formats = {"mp3", "wav", "ogg", "flac", "aac", "opus", "pcm"}
@@ -88,10 +101,15 @@ class OpenAITTSService:
                     f"Unsupported output format '{output_format}'. Falling back to 'mp3'."
                 )
                 output_format = "mp3"
+            # Optionally prepend style instructions to guide delivery
+            prompt_text = text
+            if self.style_instructions:
+                prompt_text = f"[Style: {self.style_instructions}]\n{text}"
+
             json_payload: Dict[str, Any] = {
                 "model": model,
                 "voice": voice_name,
-                "input": text,
+                "input": prompt_text,
                 "format": output_format,
             }
 

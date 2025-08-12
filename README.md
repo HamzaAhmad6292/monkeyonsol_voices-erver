@@ -156,6 +156,10 @@ curl -X POST "http://localhost:8000/api/chat" \
 |----------|-------------|----------|
 | `ELEVENLABS_API_KEY` | ElevenLabs API key | Yes |
 | `GROQ_API_KEY` | Groq API key | Yes |
+| `OPENAI_API_KEY` | OpenAI API key (for TTS) | Yes |
+| `OPENAI_TTS_MODEL` | Optional OpenAI TTS model (default: `gpt-4o-mini-tts`) | No |
+| `OPENAI_API_BASE` | Optional OpenAI API base URL (default: `https://api.openai.com/v1`) | No |
+| `OPENAI_TTS_INSTRUCTIONS` | Optional style guidance prepended to TTS input (default: "Speak in an artistic cartoon dog way") | No |
 | `HOST` | Server host (default: 0.0.0.0) | No |
 | `PORT` | Server port (default: 8000) | No |
 | `DEBUG` | Debug mode (default: false) | No |

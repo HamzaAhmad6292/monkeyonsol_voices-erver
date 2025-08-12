@@ -30,8 +30,8 @@ async def text_to_speech(request: TextToSpeechRequest):
             # OpenAI TTS path
             openai_service = OpenAITTSService()
 
-            # Valid OpenAI voices: alloy, echo, echo, onyx, nova, shimmer
-            selected_voice = request.voice_name or "Ballad"
+            # Valid OpenAI voices include: alloy, echo, fable, onyx, nova, shimmer, coral, verse, ballad, ash, sage
+            selected_voice = request.voice_name or "ballad"
 
             # Do not forward ElevenLabs-specific params to OpenAI
             model_id = request.model_id
