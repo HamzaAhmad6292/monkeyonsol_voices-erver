@@ -25,7 +25,7 @@ class OpenAITTSService:
             logger.warning(
                 f"Invalid OPENAI_TTS_MODEL '{configured_default}' configured. Falling back to 'tts-1'."
             )
-            self.default_model = "tts-1"
+            self.default_model = "gpt-4o-mini-tts"
         else:
             self.default_model = configured_default
         self.base_url = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
@@ -33,19 +33,19 @@ class OpenAITTSService:
     def _normalize_voice_name(self, voice_name: str) -> str:
         """Map friendly or alias names to supported OpenAI voice presets."""
         if not voice_name:
-            return "echo"
+            return "Ballad"
         name = voice_name.strip().lower()
         alias_to_voice = {
             # Common aliases for a youthful/young-boy style
-            "boy": "echo",
-            "young": "echo",
-            "kid": "echo",
-            "child": "echo",
-            "young_boy": "echo",
+            "boy": "Ballad",
+            "young": "Ballad",
+            "kid": "Ballad",
+            "child": "Ballad",
+            "young_boy": "Ballad",
             
-            "young-boy": "echo",
+            "young-boy": "Ballad",
             # Backward compatibility: requests for 'fable' now use 'echo'
-            "fable": "echo",
+            "fable": "Ballad",
         }
         if name in alias_to_voice:
             return alias_to_voice[name]
@@ -54,7 +54,7 @@ class OpenAITTSService:
     async def text_to_speech(
         self,
         text: str,
-        voice_name: str = "echo",
+        voice_name: str = "Ballad",
         model_id: Optional[str] = None,
         output_format: str = "mp3",
         voice_settings: Optional[Dict[str, Any]] = None,
@@ -75,11 +75,11 @@ class OpenAITTSService:
 
             # Ensure voice is a supported preset (normalize common aliases first)
             voice_name = self._normalize_voice_name(voice_name)
-            if voice_name not in {"alloy", "echo", "echo", "onyx", "nova", "shimmer"}:
+            if voice_name not in {"alloy", "Ballad", "Ballad", "onyx", "nova", "shimmer"}:
                 logger.warning(
                     f"Unsupported OpenAI voice '{voice_name}'. Falling back to 'echo'."
                 )
-                voice_name = "echo"
+                voice_name = "Ballad"
 
             # Validate output format
             allowed_formats = {"mp3", "wav", "ogg", "flac", "aac", "opus", "pcm"}
